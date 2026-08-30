@@ -28,12 +28,59 @@ public class RelatoDia {
     @JoinColumn(name = "avaliacao_sentimento_id", unique = true)
     private AvaliacaoSentimento avaliacaoSentimento;
 
-    public LocalDate getDataRegistro(){
-        return this.dataRegistro;
+
+    public LocalDate getDataRegistro() {
+        return dataRegistro;
     }
 
-    public void setUsuario(Usuario usuario){
-        this.usuario=usuario;
+    public void setDataRegistro(LocalDate dataRegistro) {
+        this.dataRegistro = dataRegistro;
+    }
+
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+
+    public String getConteudoHtml() {
+        return conteudoHtml;
+    }
+
+    public void setConteudoHtml(String conteudoHtml) {
+        this.conteudoHtml = conteudoHtml;
+    }
+
+
+    public boolean isFavorito() {
+        return isFavorito;
+    }
+
+    public void setFavorito(boolean favorito) {
+        isFavorito = favorito;
+    }
+
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+
+    public AvaliacaoSentimento getAvaliacaoSentimento() {
+        return avaliacaoSentimento;
+    }
+
+    public void setAvaliacaoSentimento(
+            AvaliacaoSentimento avaliacaoSentimento) {
+        this.avaliacaoSentimento = avaliacaoSentimento;
     }
 
 }

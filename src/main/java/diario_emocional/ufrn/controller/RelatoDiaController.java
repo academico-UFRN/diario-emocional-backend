@@ -5,13 +5,16 @@ import diario_emocional.ufrn.service.RelatoDiaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-@Controller("/relato")
+@RestController
+@RequestMapping("/relato")
 public class RelatoDiaController {
-    RelatoDiaService relatoDiaService;
+    private final RelatoDiaService relatoDiaService;
+
+    public RelatoDiaController(RelatoDiaService relatoDiaService) {
+        this.relatoDiaService = relatoDiaService;
+    }
 
     @PostMapping("/{usuarioId}")
     public ResponseEntity<RelatoDia> criarRelatoDoDia(
@@ -22,4 +25,10 @@ public class RelatoDiaController {
 
         return  ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    /*
+    @GetMapping("/{usuarioId}")
+    public ResponseEntity
+
+     */
 }

@@ -1,7 +1,7 @@
 package diario_emocional.ufrn.entity;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import diario_emocional.ufrn.entity.sentimento.AvaliacaoSentimento;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;

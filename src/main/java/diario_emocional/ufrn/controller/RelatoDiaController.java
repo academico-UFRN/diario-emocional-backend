@@ -1,7 +1,9 @@
 package diario_emocional.ufrn.controller;
 
+import diario_emocional.ufrn.dto.RelatoDiaEditarDto;
 import diario_emocional.ufrn.entity.RelatoDia;
 import diario_emocional.ufrn.service.RelatoDiaService;
+import org.hibernate.annotations.Parameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -25,7 +27,7 @@ public class RelatoDiaController {
             @PathVariable Long usuarioId,
             @RequestBody RelatoDia relato){
 
-        RelatoDia response = relatoDiaService.criar(relato, usuarioId);
+        RelatoDia response = this.relatoDiaService.criar(relato, usuarioId);
 
         return  ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -36,7 +38,7 @@ public class RelatoDiaController {
             @PathVariable Long usuarioId,
             @PathVariable LocalDate relatoId){
 
-        RelatoDia response = relatoDiaService.retornarRelatoEspecificoPorUsuario(relatoId,usuarioId);
+        RelatoDia response = this.relatoDiaService.retornarRelatoEspecificoPorUsuario(relatoId,usuarioId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -44,7 +46,7 @@ public class RelatoDiaController {
     @GetMapping("/buscarVarios/{usuarioId}")
     public ResponseEntity<List<RelatoDia>> buscarRelatosDoUsuario(
             @PathVariable Long usuarioId){
-        List<RelatoDia> response = relatoDiaService.retornarRelatosPorUsuario(usuarioId);
+        List<RelatoDia> response = this.relatoDiaService.retornarRelatosPorUsuario(usuarioId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -57,6 +59,27 @@ public class RelatoDiaController {
     }
 
      */
+
+    @DeleteMapping("/deletar/{usuarioId}/{dataRegistro}")
+    public ResponseEntity<Void> deletar(
+            @PathVariable Long usuarioId,
+            @PathVariable LocalDate dataRegistro
+    ){
+        this.relatoDiaService.deletar(dataRegistro, usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/editar/{usuarioId}/{dataRegistro}")
+    public ResponseEntity<RelatoDia> editar(
+            @PathVariable Long usuarioId,
+            @PathVariable LocalDate dataRegistro,
+            @RequestBody RelatoDiaEditarDto relatoEditadoUsuario
+    ){
+        RelatoDia relatoEditado = this.relatoDiaService.editar(relatoEditadoUsuario, dataRegistro, usuarioId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(relatoEditado);
+    }
+
 
 
 

@@ -1,6 +1,7 @@
 package diario_emocional.ufrn.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import diario_emocional.ufrn.dto.RelatoDiaEditarDto;
 import diario_emocional.ufrn.entity.sentimento.AvaliacaoSentimento;
 import jakarta.persistence.*;
 
@@ -23,12 +24,6 @@ public class RelatoDia {
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonIgnore
     private Usuario usuario;
-
-    //efeito cascata, alteração em relato = alteração em avaliacao
-    //remove orfãos que ficaram soltos de relato
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "avaliacao_sentimento_id", unique = true)
-    private AvaliacaoSentimento avaliacaoSentimento;
 
 
     public LocalDate getDataRegistro() {
@@ -75,14 +70,17 @@ public class RelatoDia {
         this.usuario = usuario;
     }
 
+    public void From(RelatoDiaEditarDto relatoDia){
+        if(!relatoDia.getTitulo().isEmpty()){
+            this.titulo = relatoDia.getTitulo();
+        }
 
-    public AvaliacaoSentimento getAvaliacaoSentimento() {
-        return avaliacaoSentimento;
+        if(!relatoDia.getConteudoHtml().isEmpty()){
+            this.conteudoHtml = relatoDia.getConteudoHtml();
+        }
+
+        this.isFavorito = relatoDia.isFavorito();
     }
 
-    public void setAvaliacaoSentimento(
-            AvaliacaoSentimento avaliacaoSentimento) {
-        this.avaliacaoSentimento = avaliacaoSentimento;
-    }
 
 }

@@ -1,8 +1,8 @@
-package diario_emocional.ufrn.entity.sentimento;
+package diario_emocional.ufrn.dto;
 
 import java.util.List;
 
-public record AvalicaoSentimentoRequestDTO(
+public record AvaliacaoSentimentoRequestDTO(
         Integer avaliacaoDia,
         List<SentimentoDTO> sentimentos,
         List<String> gatilhos,

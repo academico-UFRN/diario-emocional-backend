@@ -1,7 +1,7 @@
 package diario_emocional.ufrn.repository;
 
 import diario_emocional.ufrn.entity.Usuario;
-import diario_emocional.ufrn.entity.sentimento.AvaliacaoSentimento;
+import diario_emocional.ufrn.entity.AvaliacaoSentimento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

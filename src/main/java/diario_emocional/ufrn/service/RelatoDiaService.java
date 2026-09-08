@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class RelatoDiaService {
@@ -27,29 +29,10 @@ public class RelatoDiaService {
     @Transactional
     public RelatoDia criar(RelatoDia relato, Long usuarioId) {
 
-        // verifica se o relato vai ser criado em uma data futura
-        if (relato.getDataRegistro().isAfter(LocalDate.now())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário não pode criar um relato em uma data futura."
-            );
-        }
-
-        // verifica se usuario + relato já existem
-        if (this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relato.getDataRegistro())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "O usuário já realizou o relato do dia, não podendo criar outro."
-            );
-        }
+        validaRelatoDia(relato, usuarioId);
 
         // acha o usuario pelo id para relacionar ao relato
-        Usuario usuario = this.usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "O usuário responsável não existe.")
-                );
+        Usuario usuario = validaUsuarioExistente(usuarioId);
 
         relato.setUsuario(usuario);
 
@@ -60,12 +43,7 @@ public class RelatoDiaService {
 
     public RelatoDia retornarRelatoEspecificoPorUsuario(LocalDate relatoId, Long usuarioId) {
         // verifica se o usuário existe
-        Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "O usuário responsável não existe.")
-                );
+        Usuario usuario = validaUsuarioExistente(usuarioId);
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
@@ -79,15 +57,10 @@ public class RelatoDiaService {
 
     }
 
-    public List<RelatoDia> retornarRelatosPorUsuario(Long usuarioId) {
+    public List<RelatoDia> retornarRelatosPorUsuario(Long usuarioId)  {
 
         // verifica se o usuário existe
-        Usuario usuario = this.usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "O usuário responsável não existe.")
-                );
+        Usuario usuario = validaUsuarioExistente(usuarioId);
 
         return this.relatoDiaRepository.findAllByUsuarioId(usuarioId);
 
@@ -96,12 +69,7 @@ public class RelatoDiaService {
     @Transactional
     public void deletar(LocalDate relatoId, Long usuarioId) {
         // verifica se o usuário existe
-        Usuario usuario = this.usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "O usuário responsável não existe.")
-                );
+        Usuario usuario = validaUsuarioExistente(usuarioId);
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
@@ -117,14 +85,9 @@ public class RelatoDiaService {
     }
 
     @Transactional
-    public RelatoDia editar(RelatoDiaEditarDto relatoEditado, LocalDate relatoId, Long usuarioId) {
+    public RelatoDia editar(RelatoDiaEditarDto relatoEditado, LocalDate relatoId, Long usuarioId){
         // verifica se o usuário existe
-        Usuario usuario = this.usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "O usuário responsável não existe.")
-                );
+        Usuario usuario = validaUsuarioExistente(usuarioId);
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
@@ -142,5 +105,40 @@ public class RelatoDiaService {
 
         return relato;
 
+    }
+
+    private void validaRelatoDia(RelatoDia relatoDia, Long usuarioId) {
+        List<String> erros = new ArrayList<>();
+
+        if(this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoDia.getDataRegistro())){
+            erros.add("O usuário só pode ter um relato por dia");
+        }
+
+        if (relatoDia.getDataRegistro() == null) {
+            erros.add("A data de registro é obrigatória.");
+        }
+        if(relatoDia.getDataRegistro().isAfter(LocalDate.now())) {
+            erros.add("A data de registro não pode ser futura.");
+        }
+
+        if (relatoDia.getTitulo() == null || relatoDia.getTitulo().isBlank()) {
+            erros.add("O título é obrigatório.");
+        }
+
+        if (relatoDia.getConteudoHtml() == null || relatoDia.getConteudoHtml().isBlank()) {
+            erros.add("O conteúdo do relato é obrigatório.");
+        }
+
+        if (!erros.isEmpty()) {
+            throw new IllegalArgumentException(String.join(" ", erros));
+        }
+    }
+
+    private Usuario validaUsuarioExistente(Long usuarioId) {
+        Usuario usuario = this.usuarioRepository.findById(usuarioId)
+                .orElseThrow(() ->
+                        new NoSuchElementException("O usuário responsável não existe.")
+                );
+        return usuario;
     }
 }

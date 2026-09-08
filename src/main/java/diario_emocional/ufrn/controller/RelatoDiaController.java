@@ -25,7 +25,7 @@ public class RelatoDiaController {
     @PostMapping("/criar/{usuarioId}")
     public ResponseEntity<RelatoDia> criarRelatoDoDia(
             @PathVariable Long usuarioId,
-            @RequestBody RelatoDia relato){
+            @RequestBody RelatoDia relato)  {
 
         RelatoDia response = this.relatoDiaService.criar(relato, usuarioId);
 
@@ -36,7 +36,7 @@ public class RelatoDiaController {
     @GetMapping("/buscarEspecifico/{usuarioId}/{relatoId}")
     public ResponseEntity<RelatoDia> buscarRelatoDoDia(
             @PathVariable Long usuarioId,
-            @PathVariable LocalDate relatoId){
+            @PathVariable LocalDate relatoId)  {
 
         RelatoDia response = this.relatoDiaService.retornarRelatoEspecificoPorUsuario(relatoId,usuarioId);
 
@@ -45,7 +45,7 @@ public class RelatoDiaController {
 
     @GetMapping("/buscarVarios/{usuarioId}")
     public ResponseEntity<List<RelatoDia>> buscarRelatosDoUsuario(
-            @PathVariable Long usuarioId){
+            @PathVariable Long usuarioId) {
         List<RelatoDia> response = this.relatoDiaService.retornarRelatosPorUsuario(usuarioId);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -64,7 +64,7 @@ public class RelatoDiaController {
     public ResponseEntity<Void> deletar(
             @PathVariable Long usuarioId,
             @PathVariable LocalDate dataRegistro
-    ){
+    )  {
         this.relatoDiaService.deletar(dataRegistro, usuarioId);
         return ResponseEntity.noContent().build();
     }
@@ -74,7 +74,7 @@ public class RelatoDiaController {
             @PathVariable Long usuarioId,
             @PathVariable LocalDate dataRegistro,
             @RequestBody RelatoDiaEditarDto relatoEditadoUsuario
-    ){
+    ) {
         RelatoDia relatoEditado = this.relatoDiaService.editar(relatoEditadoUsuario, dataRegistro, usuarioId);
 
         return ResponseEntity.status(HttpStatus.OK).body(relatoEditado);

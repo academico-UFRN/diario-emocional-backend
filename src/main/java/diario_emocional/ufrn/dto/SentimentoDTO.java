@@ -1,4 +1,4 @@
-package diario_emocional.ufrn.entity.sentimento;
+package diario_emocional.ufrn.dto;
 
 public record SentimentoDTO(
         String sentimento,

@@ -58,24 +58,12 @@ public class AvaliacaoSentimento {
         this.sentimentos = (sentimentos != null) ? sentimentos : new ArrayList<>();
     }
 
-    public void updateEntityFromDTO(AvaliacaoSentimentoRequestDTO dto) {
-        validar(dto.avaliacaoDia(), dto.textoLivre(), dto.sentimentos().stream().map(s -> new Sentimento(s.sentimento(), s.intensidade()))
-                .toList());
-
-        this.setAvaliacaoDia(dto.avaliacaoDia());
-        this.setTextoLivre(dto.textoLivre());
-
-        this.getGatilhos().clear();
-        if (dto.gatilhos() != null) {
-            this.getGatilhos().addAll(dto.gatilhos());
-        }
-
-        this.getSentimentos().clear();
-        this.getSentimentos().addAll(
-                dto.sentimentos().stream()
-                        .map(s -> new Sentimento(s.sentimento(), s.intensidade()))
-                        .toList()
-        );
+    public void atualizar(Integer avaliacaoDia, String textoLivre, List<String> gatilhos, List<Sentimento> sentimentos) {
+        validar(avaliacaoDia, textoLivre, sentimentos);
+        this.avaliacaoDia = avaliacaoDia;
+        this.textoLivre = textoLivre;
+        this.gatilhos = (gatilhos != null) ? new ArrayList<>(gatilhos) : new ArrayList<>();
+        this.sentimentos = (sentimentos != null) ? new ArrayList<>(sentimentos) : new ArrayList<>();
     }
 
     // Concat string and retunr erro - To do

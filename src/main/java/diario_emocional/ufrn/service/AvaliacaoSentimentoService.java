@@ -1,9 +1,11 @@
 package diario_emocional.ufrn.service;
 
+import diario_emocional.ufrn.entity.Sentimento;
 import diario_emocional.ufrn.entity.Usuario;
 import diario_emocional.ufrn.entity.AvaliacaoSentimento;
 import diario_emocional.ufrn.dto.AvaliacaoSentimentoResponseDTO;
 import diario_emocional.ufrn.dto.AvaliacaoSentimentoRequestDTO;
+import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.mapper.AvaliacaoSentimentoMapper;
 import diario_emocional.ufrn.repository.AvalicaoSentimentoRepository;
 import diario_emocional.ufrn.repository.UsuarioRepository;
@@ -32,7 +34,7 @@ public class AvaliacaoSentimentoService {
         LocalDate data = LocalDate.now();
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
         avalicaoSentimentoRepository.findByUsuarioAndDataRegistro(usuario, data)
                 .ifPresent(registro -> {
@@ -50,7 +52,7 @@ public class AvaliacaoSentimentoService {
     public List<AvaliacaoSentimentoResponseDTO> listar(Long usuarioId) {
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
        return avalicaoSentimentoRepository.findByUsuario(usuario).stream().map(avaliacaoSentimentoMapper::toDTO).toList();
     }
@@ -58,11 +60,11 @@ public class AvaliacaoSentimentoService {
     public AvaliacaoSentimentoResponseDTO get(Long usuarioId, LocalDate dataRegistro) {
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
         AvaliacaoSentimento avaliacaoSentimento = this.avalicaoSentimentoRepository
                 .findByUsuarioAndDataRegistro(usuario, dataRegistro)
-                .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com data: " + dataRegistro));
+                .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada com data: " + dataRegistro));
 
         return avaliacaoSentimentoMapper.toDTO(avaliacaoSentimento);
     }
@@ -71,13 +73,18 @@ public class AvaliacaoSentimentoService {
     public AvaliacaoSentimentoResponseDTO editar(AvaliacaoSentimentoRequestDTO dto, Long usuarioId, LocalDate dataRegistro) {
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
         AvaliacaoSentimento avaliacaoSentimento = this.avalicaoSentimentoRepository
                 .findByUsuarioAndDataRegistro(usuario, dataRegistro)
-                .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com data: " + dataRegistro));
+                .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada com data: " + dataRegistro));
 
-        avaliacaoSentimento.updateEntityFromDTO(dto);
+
+        avaliacaoSentimento
+                .atualizar(dto.avaliacaoDia(), dto.textoLivre(), dto.gatilhos(), dto.sentimentos()
+                        .stream()
+                        .map((s) -> new Sentimento(s.sentimento(), s.intensidade()))
+                        .toList());
 
         return avaliacaoSentimentoMapper.toDTO(avaliacaoSentimento);
     }
@@ -86,11 +93,11 @@ public class AvaliacaoSentimentoService {
     public void deletar(LocalDate dataRegistro, Long usuarioId) {
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + usuarioId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
         AvaliacaoSentimento avaliacaoSentimento = this.avalicaoSentimentoRepository
                 .findByUsuarioAndDataRegistro(usuario, dataRegistro)
-                .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com data: " + dataRegistro));
+                .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada com data: " + dataRegistro));
 
         this.avalicaoSentimentoRepository.delete(avaliacaoSentimento);
     }

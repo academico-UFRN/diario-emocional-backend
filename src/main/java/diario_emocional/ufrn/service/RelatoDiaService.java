@@ -3,10 +3,10 @@ package diario_emocional.ufrn.service;
 import diario_emocional.ufrn.dto.RelatoDiaEditarDto;
 import diario_emocional.ufrn.entity.RelatoDia;
 import diario_emocional.ufrn.entity.Usuario;
+import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.repository.RelatoDiaRepository;
 import diario_emocional.ufrn.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class RelatoDiaService {
@@ -137,7 +136,7 @@ public class RelatoDiaService {
     private Usuario validaUsuarioExistente(Long usuarioId) {
         Usuario usuario = this.usuarioRepository.findById(usuarioId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("O usuário responsável não existe.")
+                        new ResourceNotFoundException("O usuário responsável não existe.")
                 );
         return usuario;
     }

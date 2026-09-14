@@ -3,8 +3,11 @@ package diario_emocional.ufrn.controller;
 import diario_emocional.ufrn.dto.AtividadeRequestDTO;
 import diario_emocional.ufrn.dto.AtividadeResponseDTO;
 import diario_emocional.ufrn.dto.CronogramaResponseDTO;
+import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.service.AtividadeObrigatoriaService;
 import jakarta.validation.Valid;
+
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +35,15 @@ public class AtividadeObrigatoriaController {
     public ResponseEntity<CronogramaResponseDTO> listarPorUsuario(@PathVariable Long usuarioId) {
         CronogramaResponseDTO cronograma = service.obterCronogramaDoUsuario(usuarioId);
         return ResponseEntity.ok(cronograma);
+    }
+
+    // GET atividades por dia da semana
+    @GetMapping("/usuario/{usuarioId}/dia/{dia}")
+    public ResponseEntity<List<AtividadeResponseDTO>> listarPorDia(
+            @PathVariable Long usuarioId,
+            @PathVariable DiaSemana dia) {
+        List<AtividadeResponseDTO> atividades = service.obterAtividadesPorDia(usuarioId, dia);
+        return ResponseEntity.ok(atividades);
     }
 
     //GET obter detalhes de uma atividade

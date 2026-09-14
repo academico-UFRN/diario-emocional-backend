@@ -5,7 +5,10 @@ import diario_emocional.ufrn.dto.AtividadeResponseDTO;
 import diario_emocional.ufrn.dto.CronogramaResponseDTO;
 import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.entity.AtividadeObrigatoria;
+import diario_emocional.ufrn.entity.Usuario;
+import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.repository.AtividadeObrigatoriaRepository;
+import diario_emocional.ufrn.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +18,11 @@ import java.util.stream.Collectors;
 @Service public class AtividadeObrigatoriaService {
 
     private final AtividadeObrigatoriaRepository repository;
+    private final UsuarioRepository usuarioRepository;
 
-    public AtividadeObrigatoriaService(AtividadeObrigatoriaRepository repository) {
+    public AtividadeObrigatoriaService(AtividadeObrigatoriaRepository repository, UsuarioRepository usuarioRepository) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
     }
 
 
@@ -42,6 +47,9 @@ import java.util.stream.Collectors;
     // Listar cronograma
     @Transactional(readOnly = true)
     public CronogramaResponseDTO obterCronogramaDoUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
+
         List<AtividadeObrigatoria> atividades = repository.findByUsuarioIdAndAtivoTrue(usuarioId);
 
         List<AtividadeResponseDTO> dtos = atividades.stream()
@@ -49,9 +57,9 @@ import java.util.stream.Collectors;
                 .collect(Collectors.toList());
 
         return new CronogramaResponseDTO(
-                1L,
-                usuarioId,
-                "Nome do Usuário",
+                null,
+                usuario.getId(),
+                null,
                 dtos
         );
     }

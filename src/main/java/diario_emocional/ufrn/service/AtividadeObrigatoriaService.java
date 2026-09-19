@@ -3,6 +3,7 @@ package diario_emocional.ufrn.service;
 import diario_emocional.ufrn.dto.AtividadeRequestDTO;
 import diario_emocional.ufrn.dto.AtividadeResponseDTO;
 import diario_emocional.ufrn.dto.CronogramaResponseDTO;
+import diario_emocional.ufrn.entity.Lembrete;
 import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.entity.AtividadeObrigatoria;
 import diario_emocional.ufrn.entity.Usuario;
@@ -19,10 +20,12 @@ import java.util.stream.Collectors;
 
     private final AtividadeObrigatoriaRepository repository;
     private final UsuarioRepository usuarioRepository;
+    private final LembreteService lembreteService;
 
-    public AtividadeObrigatoriaService(AtividadeObrigatoriaRepository repository, UsuarioRepository usuarioRepository) {
+    public AtividadeObrigatoriaService(AtividadeObrigatoriaRepository repository, UsuarioRepository usuarioRepository, LembreteService lembreteService) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
+        this.lembreteService = lembreteService;
     }
 
 
@@ -40,6 +43,16 @@ import java.util.stream.Collectors;
         entidade.setDiasDaSemana(dto.getDiasDaSemana());
 
         AtividadeObrigatoria salva = repository.save(entidade);
+
+
+        List<Lembrete> lembretes =
+                lembreteService.criar(dto.getLembretes(), salva);
+
+        salva.setLembretes(lembretes);
+
+
+        repository.save(salva);
+
         return new AtividadeResponseDTO(salva);
     }
 

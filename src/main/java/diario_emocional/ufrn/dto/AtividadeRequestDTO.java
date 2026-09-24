@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.dto;
 
+import diario_emocional.ufrn.entity.Lembrete;
 import diario_emocional.ufrn.enums.DiaSemana;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,15 +24,18 @@ public class AtividadeRequestDTO {
     @NotEmpty(message = "Informe ao menos um dia da semana para a atividade.")
     private List<DiaSemana> diasDaSemana;
 
+    private LembreteDto lembretes;
+
     public AtividadeRequestDTO() {
     }
 
-    public AtividadeRequestDTO(String titulo, String subtitulo, LocalTime horaInicio, LocalTime horaFim, List<DiaSemana> diasDaSemana) {
+    public AtividadeRequestDTO(String titulo, String subtitulo, LocalTime horaInicio, LocalTime horaFim, List<DiaSemana> diasDaSemana, LembreteDto lembretes) {
         this.titulo = titulo;
         this.subtitulo = subtitulo;
         this.horaInicio = horaInicio;
         this.horaFim = horaFim;
         this.diasDaSemana = diasDaSemana;
+        this.lembretes = lembretes;
     }
 
     public String getTitulo() {
@@ -72,5 +76,9 @@ public class AtividadeRequestDTO {
 
     public void setDiasDaSemana(List<DiaSemana> diasDaSemana) {
         this.diasDaSemana = diasDaSemana;
+    }
+
+    public LembreteDto getLembretes(){
+        return this.lembretes;
     }
 }

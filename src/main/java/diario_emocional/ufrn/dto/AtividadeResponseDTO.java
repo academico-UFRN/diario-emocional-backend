@@ -1,6 +1,7 @@
 package diario_emocional.ufrn.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import diario_emocional.ufrn.entity.Lembrete;
 import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.entity.AtividadeObrigatoria;
 
@@ -23,6 +24,7 @@ public class AtividadeResponseDTO {
 
     private LocalDateTime dataCriacao;
     private Boolean ativo;
+    private List<Lembrete> lembretes;
 
     public AtividadeResponseDTO() {
     }
@@ -36,6 +38,7 @@ public class AtividadeResponseDTO {
         this.diasDaSemana = entidade.getDiasDaSemana();
         this.dataCriacao = entidade.getDataCriacao();
         this.ativo = entidade.getAtivo();
+        this.lembretes = entidade.getLembretes();
     }
 
     public Long getId() {

@@ -27,6 +27,9 @@ public class AtividadeObrigatoria {
     @Column(nullable = false)
     private LocalTime horaFim;
 
+    @OneToMany(mappedBy = "atividadeObrigatoria")
+    private List<Lembrete> lembretes;
+
     @ElementCollection(targetClass = DiaSemana.class)
     @Enumerated(EnumType.STRING)
     @CollectionTable(
@@ -142,5 +145,11 @@ public class AtividadeObrigatoria {
 
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
+    }
+    public void setLembretes(List<Lembrete> lembretes){
+        this.lembretes = lembretes;
+    }
+    public List<Lembrete> getLembretes(){
+        return this.lembretes;
     }
 }

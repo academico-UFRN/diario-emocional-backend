@@ -13,6 +13,7 @@ import diario_emocional.ufrn.mapper.ChatMapper;
 import diario_emocional.ufrn.repository.ChatRepository;
 import diario_emocional.ufrn.repository.MensagemRepository;
 import diario_emocional.ufrn.repository.UsuarioRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class ChatService {
         this.chatMapper = chatMapper;
     }
 
+    @Transactional
     public ChatResponseDTO criar(String mensagem, Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
@@ -53,6 +55,7 @@ public class ChatService {
         return chatMapper.toDTO(chatRepository.save(chat));
     }
 
+    @Transactional
     public ChatResponseDTO chat(String mensagem, UUID chatId, Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
@@ -84,5 +87,10 @@ public class ChatService {
                 .orElseThrow(() -> new ResourceNotFoundException("Chat não encontrado com o ID: " + chatId));
 
         return chatMapper.toDTO(chat);
+    }
+
+    @Transactional
+    public void deletar(UUID chatId) {
+        chatRepository.deleteById(chatId);
     }
 }

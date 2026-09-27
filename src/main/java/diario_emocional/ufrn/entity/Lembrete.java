@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import diario_emocional.ufrn.dto.LembreteResponseDto;
 import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.enums.TipoLembrete;
 
@@ -68,5 +69,16 @@ public class Lembrete {
 
     public AtividadeObrigatoria getAtividadeObrigatoria() {
         return this.atividadeObrigatoria;
+    }
+
+    public LembreteResponseDto toResponseDTO() {
+        return new LembreteResponseDto(
+                this.id,
+                this.hora,
+                this.ultimaDataEnvio,
+                this.diaSemana,
+                this.tipoLembrete,
+                this.atividadeObrigatoria.getTitulo()
+        );
     }
 }

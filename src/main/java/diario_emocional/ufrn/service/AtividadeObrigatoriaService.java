@@ -99,11 +99,18 @@ import java.util.stream.Collectors;
 
     // atualizar
     @Transactional
-    public AtividadeResponseDTO atualizarAtividade(Long usuarioId, Long id, AtividadeRequestDTO dto) {
+    public AtividadeResponseDTO atualizarAtividade(
+            Long usuarioId,
+            Long id,
+            AtividadeRequestDTO dto
+    ) {
         validarHorarios(dto);
 
-        AtividadeObrigatoria atividade = repository.findByIdAndUsuarioIdAndAtivoTrue(id, usuarioId)
-                .orElseThrow(() -> new RuntimeException("Atividade não encontrada para atualização."));
+        AtividadeObrigatoria atividade = repository
+                .findByIdAndUsuarioIdAndAtivoTrue(id, usuarioId)
+                .orElseThrow(() ->
+                        new RuntimeException("Atividade não encontrada para atualização.")
+                );
 
         validarConflitoDeHorarios(usuarioId, dto, id);
 
@@ -113,17 +120,34 @@ import java.util.stream.Collectors;
         atividade.setHoraFim(dto.getHoraFim());
         atividade.setDiasDaSemana(dto.getDiasDaSemana());
 
+        lembreteService.deletarPorAtividade(atividade.getId());
+
+        List<Lembrete> novosLembretes =
+                lembreteService.criar(dto.getLembretes(), atividade);
+
+        atividade.setLembretes(novosLembretes);
+
         AtividadeObrigatoria atualizada = repository.save(atividade);
+
         return new AtividadeResponseDTO(atualizada);
     }
 
     // remover
     @Transactional
-    public void deletarAtividade(Long usuarioid, Long id) {
-        AtividadeObrigatoria atividade = repository.findByIdAndUsuarioIdAndAtivoTrue(id, usuarioid)
-                .orElseThrow(() -> new RuntimeException("Atividade não encontrada para exclusão."));
+    public void deletarAtividade(Long usuarioId, Long id) {
+
+        AtividadeObrigatoria atividade =
+                repository.findByIdAndUsuarioIdAndAtivoTrue(id, usuarioId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Atividade não encontrada para exclusão."
+                                )
+                        );
+
+        lembreteService.deletarPorAtividade(atividade.getId());
 
         atividade.setAtivo(false);
+
         repository.save(atividade);
     }
 

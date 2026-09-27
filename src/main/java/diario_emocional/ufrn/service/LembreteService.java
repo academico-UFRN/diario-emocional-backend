@@ -1,12 +1,14 @@
 package diario_emocional.ufrn.service;
 
 import diario_emocional.ufrn.dto.LembreteDto;
+import diario_emocional.ufrn.dto.LembreteResponseDto;
 import diario_emocional.ufrn.entity.AtividadeObrigatoria;
 import diario_emocional.ufrn.entity.Lembrete;
 import diario_emocional.ufrn.enums.DiaSemana;
 import diario_emocional.ufrn.enums.TipoLembrete;
 import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.repository.LembreteRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -56,6 +58,8 @@ public class LembreteService {
 
                 lembrete.setHora(horaLembrete);
 
+                lembrete.setTipoLembrete(tipoLembrete);
+
                 lembreteRepository.save(lembrete);
 
                 lembretes.add(lembrete);
@@ -64,13 +68,19 @@ public class LembreteService {
 
         return lembretes;
     }
+
+
+    public void deletarPorAtividade(Long atividadeId) {
+        lembreteRepository.deleteByAtividadeObrigatoriaId(atividadeId);
+    }
+
     public boolean horarioDoLembreteChegou(Lembrete lembrete) {
 
         LocalTime agora = LocalTime.now().withSecond(0).withNano(0);
 
         return agora.equals(lembrete.getHora());
     }
-    public Lembrete verificarLembreteParaEnviar() {
+    public LembreteResponseDto verificarLembreteParaEnviar() {
 
         List<Lembrete> lembretes = lembreteRepository.findAll();
 
@@ -87,7 +97,7 @@ public class LembreteService {
                 lembrete.setUltimaDataEnvio(hoje);
                 lembreteRepository.save(lembrete);
 
-                return lembrete;
+                return lembrete.toResponseDTO();
             }
         }
 

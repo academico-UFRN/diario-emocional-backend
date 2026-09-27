@@ -14,5 +14,5 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface LembreteRepository extends JpaRepository<Lembrete, Long> {
-
+    void deleteByAtividadeObrigatoriaId(Long atividadeId);
     }

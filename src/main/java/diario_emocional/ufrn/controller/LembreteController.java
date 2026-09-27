@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.controller;
 
+import diario_emocional.ufrn.dto.LembreteResponseDto;
 import diario_emocional.ufrn.entity.Lembrete;
 import diario_emocional.ufrn.service.LembreteService;
 import org.springframework.http.HttpStatus;
@@ -21,9 +22,9 @@ public class LembreteController {
     }
 
     @GetMapping("/nao-enviados")
-    public ResponseEntity<Lembrete> buscarNaoEnviados() {
+    public ResponseEntity<LembreteResponseDto> buscarNaoEnviados() {
 
-        Lembrete lembrete = lembreteService.verificarLembreteParaEnviar();
+        LembreteResponseDto lembrete = lembreteService.verificarLembreteParaEnviar();
 
         if (lembrete == null) {
             return ResponseEntity.noContent().build();

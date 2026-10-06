@@ -1,6 +1,8 @@
 package diario_emocional.ufrn.service;
 
+import diario_emocional.ufrn.dto.UsuarioRequestDTO;
 import diario_emocional.ufrn.entity.Usuario;
+import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.repository.UsuarioRepository;
 
 import java.util.Optional;
@@ -30,15 +32,37 @@ public class UsuarioService {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByNome(nome);
 
         if (usuarioOpt.isEmpty()) {
-            throw new IllegalArgumentException("O usuário não foi encontrado.");
+            throw new ResourceNotFoundException("Nome de usuário não foi encontrado.");
         }
 
         Usuario usuario = usuarioOpt.get();
 
         if (!usuario.getSenha().equals(senha)) {
-            throw new IllegalArgumentException("A senha não condiz com o usuário.");
+            throw new IllegalArgumentException("Nome e senha não existem a um usuário válido.");
         }
 
         return usuario.getId();
+    }
+
+    public Usuario editarUsuario(String nome, String senha, Long id){
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não foi encontrado no banco de dados."));
+
+        if (nome!=null) {
+            usuario.setNome(nome);
+        }
+
+        if (senha !=null) {
+            usuario.setSenha(senha);
+        }
+
+        usuarioRepository.save(usuario);
+
+        return usuario;
+    }
+
+    public void deletarUsuario(Long id){
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não foi encontrado no banco de dados."));
+
+        usuarioRepository.delete(usuario);
     }
 }

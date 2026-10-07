@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import diario_emocional.ufrn.enums.DiaSemana;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -40,8 +41,10 @@ public class AtividadeObrigatoria {
     @Column(name = "dia_semana")
     private List<DiaSemana> diasDaSemana = new ArrayList<>();
 
-    @Column(nullable = false)
-    private Long usuarioId;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnore
+    private Usuario usuario;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
@@ -115,12 +118,12 @@ public class AtividadeObrigatoria {
         this.diasDaSemana = diasDaSemana;
     }
 
-    public Long getUsuarioId() {
-        return usuarioId;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setUsuarioId(Long usuarioId) {
-        this.usuarioId = usuarioId;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public LocalDateTime getDataCriacao() {

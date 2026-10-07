@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.service;
 
+import diario_emocional.ufrn.dto.ContextoSemanalDTO;
 import diario_emocional.ufrn.dto.IA.IAResponseCriarDTO;
 import diario_emocional.ufrn.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.dto.IA.IAResponseDTO;
@@ -11,6 +12,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -156,6 +158,20 @@ public class IAService {
 
     public String retornarStringSugestao(GeminiResponseDTO response){
 
+        if (response == null) {
+            throw new IllegalArgumentException("Resposta do Gemini veio nula.");
+        }
+
+        if (response.getCandidates() == null || response.getCandidates().isEmpty()) {
+            throw new IllegalArgumentException("Gemini não retornou candidates.");
+        }
+
+        String resposta = response.getCandidates().get(0)
+                .getContent()
+                .getParts()
+                .get(0)
+                .getText();
+
         return response
                 .getCandidates()
                 .get(0)
@@ -163,6 +179,11 @@ public class IAService {
                 .getParts()
                 .get(0)
                 .getText();
+
+    }
+
+
+    public void gerarPromptSugestaoSaudeMental(Long usuarioId, LocalDate dataAtual){
 
     }
 

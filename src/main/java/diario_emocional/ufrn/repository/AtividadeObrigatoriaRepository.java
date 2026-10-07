@@ -17,9 +17,16 @@ public interface AtividadeObrigatoriaRepository extends JpaRepository<AtividadeO
 
     Optional<AtividadeObrigatoria> findByIdAndUsuarioIdAndAtivoTrue(Long id, Long usuarioId);
 
-    @Query("SELECT a FROM AtividadeObrigatoria a JOIN a.diasDaSemana d WHERE a.usuarioId = :usuarioId AND a.ativo = true AND d = :dia")
+    @Query("""
+    SELECT a
+    FROM AtividadeObrigatoria a
+    JOIN a.diasDaSemana d
+    WHERE a.usuario.id = :usuarioId
+    AND a.ativo = true
+    AND d = :dia
+""")
     List<AtividadeObrigatoria> findByUsuarioIdAndDiaSemana(
-        @Param("usuarioId") Long usuarioId,
-        @Param("dia") DiaSemana dia
+            @Param("usuarioId") Long usuarioId,
+            @Param("dia") DiaSemana dia
     );
 }

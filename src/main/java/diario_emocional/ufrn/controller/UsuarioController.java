@@ -28,7 +28,7 @@ public class UsuarioController {
     }
 
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<Long> loginUsuario(@RequestBody UsuarioRequestDTO usuarioRequestDTO){
 
         Long usuarioCriadoId = this.usuarioService.login(usuarioRequestDTO.getNome(), usuarioRequestDTO.getSenha());

@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import diario_emocional.ufrn.dto.AvaliacaoSentimentoRequestDTO;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
@@ -43,6 +44,7 @@ public class AvaliacaoSentimento {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnore
     private Usuario usuario;
 
     protected AvaliacaoSentimento() {}

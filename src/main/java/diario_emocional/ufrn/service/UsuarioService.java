@@ -4,9 +4,11 @@ import diario_emocional.ufrn.dto.UsuarioRequestDTO;
 import diario_emocional.ufrn.entity.Usuario;
 import diario_emocional.ufrn.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.repository.UsuarioRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;

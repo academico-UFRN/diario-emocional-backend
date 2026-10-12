@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service public class AtividadeObrigatoriaService {
@@ -34,8 +35,10 @@ import java.util.stream.Collectors;
         validarHorarios(dto);
         validarConflitoDeHorarios(usuarioId, dto, null);
 
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow(() -> new ResourceNotFoundException("Usuário não existe"));
+
         AtividadeObrigatoria entidade = new AtividadeObrigatoria();
-        entidade.setUsuarioId(usuarioId);
+        entidade.setUsuario(usuario);
         entidade.setTitulo(dto.getTitulo());
         entidade.setSubtitulo(dto.getSubtitulo());
         entidade.setHoraInicio(dto.getHoraInicio());

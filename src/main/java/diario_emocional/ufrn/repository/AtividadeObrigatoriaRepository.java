@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +31,6 @@ public interface AtividadeObrigatoriaRepository extends JpaRepository<AtividadeO
             @Param("usuarioId") Long usuarioId,
             @Param("dia") DiaSemana dia
     );
+
+    List<AtividadeObrigatoria> findAllByUsuario_IdAndAtivoTrue(Long id);
 }

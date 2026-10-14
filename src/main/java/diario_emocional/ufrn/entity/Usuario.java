@@ -34,6 +34,10 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AvaliacaoSentimento> avaliacoesSentimento = new ArrayList<>();
 
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Solicitacao> solicitacaos = new ArrayList<>();
+
+
     protected Usuario() { } // exigido pelo JPA
 
     public Usuario(String nome, String senha) {

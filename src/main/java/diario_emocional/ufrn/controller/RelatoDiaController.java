@@ -57,9 +57,7 @@ public class RelatoDiaController {
     public ResponseEntity<String> sugerirEscritaDeRelato(
             @PathVariable Long usuarioId) throws IOException, InterruptedException {
 
-        String prompt = this.iaService.gerarPromptSugestoesRelatoDia(usuarioId, LocalDate.now());
-        GeminiResponseDTO responseDTO = this.iaService.retornarSugestoesRelatoDia(prompt);
-        String responseString = this.iaService.retornarStringSugestao(responseDTO);
+        String responseString = this.relatoDiaService.criarSugestaoRelatoDia(usuarioId, LocalDate.now());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseString);
     }

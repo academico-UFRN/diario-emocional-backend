@@ -25,14 +25,16 @@ public class SugestaoService {
     private final RelatoHigieneSonoRepository relatoHigieneSonoRepository;
     private final AtividadeObrigatoriaRepository atividadeObrigatoriaRepository;
     private final AvalicaoSentimentoRepository avalicaoSentimentoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    SugestaoService(IAService iaService, SolicitacaoRepository solicitacaoRepository, RelatoDiaRepository relatoDiaRepository,RelatoHigieneSonoRepository relatoHigieneSonoRepository,AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvalicaoSentimentoRepository avalicaoSentimentoRepository){
+    SugestaoService(IAService iaService, SolicitacaoRepository solicitacaoRepository, RelatoDiaRepository relatoDiaRepository,RelatoHigieneSonoRepository relatoHigieneSonoRepository,AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvalicaoSentimentoRepository avalicaoSentimentoRepository, UsuarioRepository usuarioRepository){
         this.iaService = iaService;
         this.solicitacaoRepository = solicitacaoRepository;
         this.relatoDiaRepository = relatoDiaRepository;
         this.relatoHigieneSonoRepository = relatoHigieneSonoRepository;
         this.atividadeObrigatoriaRepository = atividadeObrigatoriaRepository;
         this.avalicaoSentimentoRepository = avalicaoSentimentoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public String criarPromptComContexto(Long usuarioId, LocalDate data){
@@ -76,19 +78,31 @@ public class SugestaoService {
         GeminiResponseDTO responseDTO = this.iaService.retornarSugestoesSaudeMental(prompt);
         String responseString = this.iaService.retornarStringSugestao(responseDTO);
 
-        RespostasSugestaoDTO respostas = objectMapper.convertValue(responseString, RespostasSugestaoDTO.class);
-
+        RespostasSugestaoDTO respostas = objectMapper.readValue(responseString, RespostasSugestaoDTO.class);
         Solicitacao solicitacao = new Solicitacao();
         List<Sugestao> listaSugestao = new ArrayList<>();
 
-        for(SugestaoDTO sugestao : respostas.getSugestoes()){
-            Sugestao sugestaoResposta = new Sugestao(sugestao.getAcao(), sugestao.getMotivo());
-            listaSugestao.add(sugestaoResposta);
+        for (SugestaoDTO sugestao : respostas.getSugestoes()) {
 
+            Sugestao sugestaoResposta = new Sugestao(
+                    sugestao.getAcao(),
+                    sugestao.getMotivo()
+            );
+
+            // Define a solicitação à qual a sugestão pertence
+            sugestaoResposta.setSolicitacao(solicitacao);
+
+            listaSugestao.add(sugestaoResposta);
         }
 
         solicitacao.setSugestoes(listaSugestao);
         solicitacao.setDataRegistro(LocalDate.now());
+
+// Associa o usuário antes de salvar
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        solicitacao.setUsuario(usuario);
 
         solicitacaoRepository.save(solicitacao);
 

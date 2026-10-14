@@ -11,6 +11,7 @@ import java.util.List;
 public class Solicitacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
     private LocalDate dataRegistro;
@@ -33,5 +34,19 @@ public class Solicitacao {
 
     public void setDataRegistro(LocalDate data){
         this.dataRegistro = data;
+    }
+
+    public void setUsuario(Usuario usuario){this.usuario = usuario;}
+
+    public Long getId() {
+        return id;
+    }
+
+    public LocalDate getDataRegistro() {
+        return dataRegistro;
+    }
+
+    public List<Sugestao> getSugestoes() {
+        return sugestoes;
     }
 }

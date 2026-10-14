@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 public class Sugestao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
     private String acao;
@@ -23,12 +24,37 @@ public class Sugestao {
         this.acao = acao;
         this.motivo = motivo;
     }
+    public Long getId() {
+        return id;
+    }
 
-    public void setAcao(String acao){
+    public String getAcao() {
+        return acao;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public Solicitacao getSolicitacao() {
+        return solicitacao;
+    }
+
+    // Setters
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setAcao(String acao) {
         this.acao = acao;
     }
 
-    public void setMotivo(String motivo){
+    public void setMotivo(String motivo) {
         this.motivo = motivo;
+    }
+
+    public void setSolicitacao(Solicitacao solicitacao) {
+        this.solicitacao = solicitacao;
     }
 }

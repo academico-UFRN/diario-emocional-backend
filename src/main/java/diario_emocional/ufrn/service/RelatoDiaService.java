@@ -50,10 +50,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
-            );
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data.");
         } else {
             return this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
         }
@@ -76,9 +73,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data."
             );
         }
         RelatoDia relato = this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
@@ -94,9 +89,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data."
             );
         }
 

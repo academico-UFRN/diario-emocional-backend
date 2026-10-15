@@ -98,7 +98,6 @@ public class SugestaoService {
         solicitacao.setSugestoes(listaSugestao);
         solicitacao.setDataRegistro(LocalDate.now());
 
-// Associa o usuário antes de salvar
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -109,7 +108,27 @@ public class SugestaoService {
         return solicitacao;
     }
 
-    public List<Solicitacao> listarSolicitacoes(Long usuarioId){
+    public List<Solicitacao> buscarVariasSolicitacoes(Long usuarioId){
         return this.solicitacaoRepository.findAllByUsuario_Id(usuarioId);
+    }
+
+    public Solicitacao buscarSolicitacaoEspecifica(Long usuarioId, Long soliticacaoId){
+        // verifica se o usuário existe
+        Usuario usuario = validaUsuarioExistente(usuarioId);
+
+        // verifica se usuario + solicitação já existem
+        if (!this.solicitacaoRepository.existsByUsuario_IdAndId(usuarioId, soliticacaoId)) {
+            throw new ResourceNotFoundException("Não foi possível encontrar essa soliticitação de saúde mental para esse usuário");
+        } else {
+            return this.solicitacaoRepository.findByUsuario_IdAndId(usuarioId, soliticacaoId);
+        }
+    }
+
+    private Usuario validaUsuarioExistente(Long usuarioId) {
+        Usuario usuario = this.usuarioRepository.findById(usuarioId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("O usuário responsável não existe.")
+                );
+        return usuario;
     }
 }

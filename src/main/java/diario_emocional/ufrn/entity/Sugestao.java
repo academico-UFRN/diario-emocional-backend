@@ -24,6 +24,9 @@ public class Sugestao {
         this.acao = acao;
         this.motivo = motivo;
     }
+    public Sugestao() {
+    }
+
     public Long getId() {
         return id;
     }

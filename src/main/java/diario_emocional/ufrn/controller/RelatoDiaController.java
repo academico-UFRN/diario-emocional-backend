@@ -53,7 +53,7 @@ public class RelatoDiaController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/IA-sugestao/{usuarioId}")
+    @PostMapping("/IA-sugestao/{usuarioId}")
     public ResponseEntity<String> sugerirEscritaDeRelato(
             @PathVariable Long usuarioId) throws IOException, InterruptedException {
 

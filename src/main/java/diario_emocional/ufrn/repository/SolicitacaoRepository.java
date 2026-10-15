@@ -10,4 +10,8 @@ import static org.hibernate.boot.model.NamedEntityGraphDefinition.Source.JPA;
 public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> {
 
     List<Solicitacao> findAllByUsuario_Id(Long id);
+
+    boolean existsByUsuario_IdAndId(Long usuarioId, Long id);
+
+    Solicitacao findByUsuario_IdAndId(Long usuarioId, Long id);
 }

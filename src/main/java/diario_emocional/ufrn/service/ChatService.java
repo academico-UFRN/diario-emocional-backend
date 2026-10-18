@@ -28,8 +28,8 @@ public class ChatService {
     IAService iaService;
     ChatMapper chatMapper;
 
-    @Autowired
-    public ChatService(ChatRepository chatRepository, IAService iaService, MensagemRepository mensagemRepository, UsuarioRepository usuarioRepository, ChatMapper chatMapper) {
+    public ChatService(ChatRepository chatRepository, IAService iaService, MensagemRepository mensagemRepository,
+            UsuarioRepository usuarioRepository, ChatMapper chatMapper) {
         this.chatRepository = chatRepository;
         this.iaService = iaService;
         this.mensagemRepository = mensagemRepository;
@@ -60,11 +60,12 @@ public class ChatService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
-        Chat chat = chatRepository.findByIdAndUsuario(chatId, usuario).orElseThrow(() -> new ResourceNotFoundException("Chat não encontrado com o ID: " + chatId));
+        Chat chat = chatRepository.findByIdAndUsuario(chatId, usuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Chat não encontrado com o ID: " + chatId));
 
         List<Mensagem> listaDeMensagens = mensagemRepository.findTop10ByChatIdOrderByCriadoEmDesc(chatId);
 
-        IAResponseDTO resposta =  iaService.chat(mensagem, chatId, listaDeMensagens);
+        IAResponseDTO resposta = iaService.chat(mensagem, chatId, listaDeMensagens);
 
         Mensagem mensagem_user = new Mensagem(MensagemRole.USER, mensagem, chat);
         Mensagem mensagem_ia = new Mensagem(MensagemRole.IA, resposta.mensagem(), chat);

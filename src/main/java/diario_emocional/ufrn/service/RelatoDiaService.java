@@ -19,10 +19,13 @@ import java.util.List;
 public class RelatoDiaService {
     private final RelatoDiaRepository relatoDiaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final StreakPeriodService streakPeriodService;
 
-    public RelatoDiaService(RelatoDiaRepository relatoDiaRepository, UsuarioRepository usuarioRepository) {
+    public RelatoDiaService(RelatoDiaRepository relatoDiaRepository, UsuarioRepository usuarioRepository,
+            StreakPeriodService streakPeriodService) {
         this.relatoDiaRepository = relatoDiaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.streakPeriodService = streakPeriodService;
     }
 
     @Transactional
@@ -35,10 +38,11 @@ public class RelatoDiaService {
 
         relato.setUsuario(usuario);
 
+        streakPeriodService.setStreakPeriod(usuarioId);
+
         return this.relatoDiaRepository.save(relato);
 
     }
-
 
     public RelatoDia retornarRelatoEspecificoPorUsuario(LocalDate relatoId, Long usuarioId) {
         // verifica se o usuário existe
@@ -48,15 +52,14 @@ public class RelatoDiaService {
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
-            );
+                    "Não foi possível encontrar o relato para esse usuário nessa data.");
         } else {
             return this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
         }
 
     }
 
-    public List<RelatoDia> retornarRelatosPorUsuario(Long usuarioId)  {
+    public List<RelatoDia> retornarRelatosPorUsuario(Long usuarioId) {
 
         // verifica se o usuário existe
         Usuario usuario = validaUsuarioExistente(usuarioId);
@@ -74,8 +77,7 @@ public class RelatoDiaService {
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
-            );
+                    "Não foi possível encontrar o relato para esse usuário nessa data.");
         }
         RelatoDia relato = this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
 
@@ -84,7 +86,7 @@ public class RelatoDiaService {
     }
 
     @Transactional
-    public RelatoDia editar(RelatoDiaEditarDto relatoEditado, LocalDate relatoId, Long usuarioId){
+    public RelatoDia editar(RelatoDiaEditarDto relatoEditado, LocalDate relatoId, Long usuarioId) {
         // verifica se o usuário existe
         Usuario usuario = validaUsuarioExistente(usuarioId);
 
@@ -92,15 +94,15 @@ public class RelatoDiaService {
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
-            );
+                    "Não foi possível encontrar o relato para esse usuário nessa data.");
         }
 
         RelatoDia relato = this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
 
         relato.From(relatoEditado);
 
-        this.relatoDiaRepository.save(relato);;
+        this.relatoDiaRepository.save(relato);
+        ;
 
         return relato;
 
@@ -109,14 +111,14 @@ public class RelatoDiaService {
     private void validaRelatoDia(RelatoDia relatoDia, Long usuarioId) {
         List<String> erros = new ArrayList<>();
 
-        if(this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoDia.getDataRegistro())){
+        if (this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoDia.getDataRegistro())) {
             erros.add("O usuário só pode ter um relato por dia");
         }
 
         if (relatoDia.getDataRegistro() == null) {
             erros.add("A data de registro é obrigatória.");
         }
-        if(relatoDia.getDataRegistro().isAfter(LocalDate.now())) {
+        if (relatoDia.getDataRegistro().isAfter(LocalDate.now())) {
             erros.add("A data de registro não pode ser futura.");
         }
 
@@ -135,9 +137,7 @@ public class RelatoDiaService {
 
     private Usuario validaUsuarioExistente(Long usuarioId) {
         Usuario usuario = this.usuarioRepository.findById(usuarioId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("O usuário responsável não existe.")
-                );
+                .orElseThrow(() -> new ResourceNotFoundException("O usuário responsável não existe."));
         return usuario;
     }
 }

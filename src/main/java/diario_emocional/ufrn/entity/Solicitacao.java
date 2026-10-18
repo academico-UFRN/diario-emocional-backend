@@ -11,7 +11,6 @@ import java.util.List;
 public class Solicitacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
     private Long id;
 
     private LocalDate dataRegistro;

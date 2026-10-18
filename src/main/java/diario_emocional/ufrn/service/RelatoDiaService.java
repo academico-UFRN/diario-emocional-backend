@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.service;
 
+import diario_emocional.ufrn.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.dto.RelatoDiaEditarDto;
 import diario_emocional.ufrn.entity.RelatoDia;
 import diario_emocional.ufrn.entity.Usuario;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +21,12 @@ import java.util.List;
 public class RelatoDiaService {
     private final RelatoDiaRepository relatoDiaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final IAService iaService;
 
-    public RelatoDiaService(RelatoDiaRepository relatoDiaRepository, UsuarioRepository usuarioRepository) {
+    public RelatoDiaService(RelatoDiaRepository relatoDiaRepository, UsuarioRepository usuarioRepository, IAService iaService) {
         this.relatoDiaRepository = relatoDiaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.iaService =  iaService;
     }
 
     @Transactional
@@ -46,10 +50,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
-            );
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data.");
         } else {
             return this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
         }
@@ -72,9 +73,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data."
             );
         }
         RelatoDia relato = this.relatoDiaRepository.findRelatoDiasByUsuarioIdAndDataRegistro(usuarioId, relatoId);
@@ -90,9 +89,7 @@ public class RelatoDiaService {
 
         // verifica se usuario + relato já existem
         if (!this.relatoDiaRepository.existsByUsuarioIdAndDataRegistro(usuarioId, relatoId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Não foi possível encontrar o relato para esse usuário nessa data."
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data."
             );
         }
 
@@ -105,6 +102,23 @@ public class RelatoDiaService {
         return relato;
 
     }
+
+    public String criarPromptComContexto(Long usuarioId, LocalDate data){
+        List<RelatoDia> relatos7dias = this.relatoDiaRepository.findAllByUsuarioIdAndDataRegistroBetween(usuarioId, data.minusDays(7), data);
+
+        if(relatos7dias.isEmpty()){
+            throw new ResourceNotFoundException("Não existe nenhum relato do dia nos últimos 7 dias.");
+        }
+
+        return this.iaService.gerarPromptSugestoesRelatoDia(relatos7dias);
+    }
+
+    public String criarSugestaoRelatoDia(Long usuarioId, LocalDate data) throws IOException, InterruptedException {
+        String prompt = this.criarPromptComContexto(usuarioId, LocalDate.now());
+        GeminiResponseDTO responseDTO = this.iaService.retornarSugestoesRelatoDia(prompt);
+        return this.iaService.retornarStringSugestao(responseDTO);
+    }
+
 
     private void validaRelatoDia(RelatoDia relatoDia, Long usuarioId) {
         List<String> erros = new ArrayList<>();

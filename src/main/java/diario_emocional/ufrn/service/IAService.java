@@ -4,10 +4,12 @@ import diario_emocional.ufrn.dto.ContextoSemanalDTO;
 import diario_emocional.ufrn.dto.IA.IAResponseCriarDTO;
 import diario_emocional.ufrn.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.dto.IA.IAResponseDTO;
-import diario_emocional.ufrn.entity.Mensagem;
-import diario_emocional.ufrn.entity.RelatoDia;
+import diario_emocional.ufrn.entity.*;
 import diario_emocional.ufrn.exception.ResourceNotFoundException;
+import diario_emocional.ufrn.repository.AtividadeObrigatoriaRepository;
+import diario_emocional.ufrn.repository.AvalicaoSentimentoRepository;
 import diario_emocional.ufrn.repository.RelatoDiaRepository;
+import diario_emocional.ufrn.repository.RelatoHigieneSonoRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
@@ -21,7 +23,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,20 +37,26 @@ public class IAService {
 
     private final HttpClient httpClient;
     private final RelatoDiaRepository relatoDiaRepository;
+    private final RelatoHigieneSonoRepository relatoHigieneSonoRepository;
+    private final AtividadeObrigatoriaRepository atividadeObrigatoriaRepository;
+    private final AvalicaoSentimentoRepository avalicaoSentimentoRepository;
     private final ObjectMapper objectMapper;
 
     @Value("${gemini.api-key}")
     private String apiKey;
     private final ChatClient chatClient;
 
-    public IAService(RelatoDiaRepository relatoDiaRepository, ObjectMapper objectMapper, ChatModel chatModel, ChatClient.Builder chatClientBuilder){
+    public IAService(RelatoDiaRepository relatoDiaRepository,  RelatoHigieneSonoRepository relatoHigieneSonoRepository, AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvalicaoSentimentoRepository avalicaoSentimentoRepository, ObjectMapper objectMapper, ChatModel chatModel, ChatClient.Builder chatClientBuilder){
         this.chatClient = chatClientBuilder.build();
         this.httpClient = HttpClient.newHttpClient();
         this.relatoDiaRepository = relatoDiaRepository;
+        this.relatoHigieneSonoRepository = relatoHigieneSonoRepository;
+        this.atividadeObrigatoriaRepository = atividadeObrigatoriaRepository;
+        this.avalicaoSentimentoRepository = avalicaoSentimentoRepository;
         this.objectMapper = objectMapper;
     }
 
-    public String gerarPromptSugestoesRelatoDia(Long usuarioId, LocalDate data){
+    public String gerarPromptSugestoesRelatoDia(List<RelatoDia> relatos7dias){
         String textoContexto = """
         Você é um assistente de reflexão pessoal de um diário emocional.
 
@@ -78,12 +89,6 @@ public class IAService {
         }
         """;
 
-
-        List<RelatoDia> relatos7dias = this.relatoDiaRepository.findAllByUsuarioIdAndDataRegistroBetween(usuarioId, data.minusDays(7), data);
-
-        if(relatos7dias.isEmpty()){
-            throw new ResourceNotFoundException("Não existe nenhum relato dos últimos 7 dias.");
-        }
 
         String relatosJson = objectMapper.writeValueAsString(relatos7dias);
 
@@ -144,16 +149,23 @@ public class IAService {
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
+        HttpResponse<String> response;
 
-        HttpResponse<String> response =
-                httpClient.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString());
+        try{
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (HttpTimeoutException e) {
+            throw new IOException("O Gemini demorou demais para responder.", e);
 
-        return  objectMapper.readValue(
-                response.body(),
-                GeminiResponseDTO.class
-        );
+        } catch (IOException e) {
+            throw new IOException("Não foi possível conectar à API do Gemini.", e);
+        }
+
+        if(response.statusCode()<200 || response.statusCode() >= 300){
+            throw new IOException("HTTP " + response.statusCode() + ". Detalhes: " + response.body());
+        }
+
+        return objectMapper.readValue(response.body(), GeminiResponseDTO.class);
+
     }
 
     public String retornarStringSugestao(GeminiResponseDTO response){
@@ -183,8 +195,238 @@ public class IAService {
     }
 
 
-    public void gerarPromptSugestaoSaudeMental(Long usuarioId, LocalDate dataAtual){
+    public String gerarPromptSugestaoSaudeMental(List<RelatoDia> relatos7dias, List<RelatoHigieneSono> higieneSono7dias, List<AtividadeObrigatoria> atividade7dias, List<AvaliacaoSentimento> avaliacao7dias){
 
+        String textoContexto = """
+        Você é um assistente de reflexão pessoal e bem-estar
+        integrado a um diário emocional.
+
+        Analise os dados do usuário referentes aos últimos 7 dias
+        e gere exatamente 3 sugestões de ações práticas que possam
+        contribuir para seu bem-estar no dia atual.
+
+        Seu objetivo é ajudar o usuário a refletir sobre sua rotina,
+        reconhecer suas experiências e encontrar pequenas ações
+        que possam favorecer seu bem-estar, respeitando sua autonomia.
+
+        DADOS A CONSIDERAR:
+        - Relatos diários: acontecimentos, interesses, sentimentos,
+          dificuldades e temas recorrentes.
+        - Relatos de higiene do sono: hábitos, horários, duração
+          e qualidade do sono, conforme registrados.
+        - Atividades obrigatórias: atividades, compromissos,
+          horários e informações de realização, quando disponíveis.
+        - Avaliações de sentimento: emoções e avaliações registradas
+          pelo usuário.
+
+        REGRAS DE ANÁLISE:
+        - Considere conjuntamente os quatro tipos de dados.
+        - Baseie as sugestões exclusivamente nas informações fornecidas.
+        - Identifique padrões, dificuldades, interesses e aspectos
+          positivos que possam ser relevantes.
+        - Não presuma relações de causa e efeito entre os dados.
+        - Não invente acontecimentos, sentimentos ou hábitos.
+        - Se algum dado estiver ausente, não presuma informações.
+        - Não considere uma atividade não registrada como não realizada.
+        - Não interprete isoladamente um registro positivo ou negativo
+          como prova de bem-estar ou de algum problema.
+        - Se houver dados incomuns, contraditórios ou insuficientes,
+          considere essa limitação antes de formular uma sugestão.
+        - Diferencie fatos registrados de possibilidades ou hipóteses.
+
+        REGRAS DAS SUGESTÕES:
+        - Gere exatamente 3 sugestões.
+        - Cada sugestão deve conter uma única ação concreta e viável.
+        - Cada ação deve ser específica, simples e realizável.
+        - As três ações devem explorar aspectos diferentes dos dados,
+          evitando sugestões redundantes.
+        - Cada ação deve estar relacionada aos registros do usuário.
+        - Evite repetir sugestões anteriores quando o histórico
+          de sugestões já estiver disponível.
+        - Não imponha metas excessivas nem incentive culpa.
+        - Não faça diagnósticos psicológicos.
+        - Não recomende medicamentos nem prescreva tratamentos.
+        - Priorize ações que respeitem a rotina, os interesses
+          e as possibilidades demonstradas pelos registros.
+
+        REGRAS DOS MOTIVOS:
+        - Cada ação deve ter seu próprio motivo.
+        - Explique por que a ação pode ser útil para aquele usuário,
+          considerando os registros fornecidos.
+        - Não se limite a repetir os dados encontrados.
+          Conecte cuidadosamente as informações à finalidade da ação
+          e ao possível benefício para o bem-estar do usuário.
+        - Escreva de maneira acolhedora, empática, natural e respeitosa,
+          como alguém que ajuda o usuário a refletir sobre a própria rotina.
+        - Prefira uma justificativa reflexiva e personalizada,
+          em vez de um relatório técnico sobre os dados.
+        - Quando apropriado, mostre como a ação pode ajudar o usuário
+          a compreender melhor suas experiências ou hábitos.
+        - Utilize expressões como "pode ajudar", "talvez seja útil"
+          e "pode ser uma oportunidade" quando o benefício for incerto.
+        - Não apresente benefícios possíveis como resultados garantidos.
+        - Evite expressões frias e impessoais como
+          "foi identificado", "houve o registro" e "os dados mostram".
+        - Não julgue, culpabilize ou pressione o usuário.
+        - Não presuma que o usuário está sofrendo, precisa mudar
+          determinado comportamento ou possui algum problema.
+        - Não invente justificativas para tornar a sugestão convincente.
+        - Se os dados forem insuficientes para estabelecer uma relação
+          clara, reconheça essa limitação de forma delicada.
+        - Evite motivos genéricos que poderiam ser utilizados
+          para qualquer pessoa, independentemente de seus registros.
+        - Varie a construção dos motivos para evitar repetições.
+        - Cada motivo deve ser breve, mas suficientemente desenvolvido
+          para explicar a relevância da ação sem ser excessivamente direto.
+
+        TOM DA RESPOSTA:
+        - Utilize linguagem simples, humana, acolhedora e não julgadora.
+        - Demonstre cuidado sem exagerar na positividade ou na intimidade.
+        - Não transforme as justificativas em conselhos moralizantes.
+        - Não use linguagem clínica ou excessivamente técnica.
+        - Valorize a possibilidade de autoconhecimento e reflexão,
+          sem afirmar que o usuário precisa corrigir sua rotina.
+        - Não faça perguntas diretamente ao usuário.
+        - Evite repetir datas, horários e números, a menos que sejam
+          realmente relevantes para explicar a sugestão.
+
+        FORMATO DA RESPOSTA:
+        - Retorne somente um objeto JSON válido.
+        - Não inclua Markdown, comentários ou texto externo ao JSON.
+        - O objeto deve conter a propriedade "sugestoes".
+        - "sugestoes" deve ser uma lista com exatamente 3 objetos.
+        - Cada objeto deve conter somente duas propriedades:
+          "acao" e "motivo", ambas strings.
+        - Os motivos também devem seguir o tom acolhedor definido acima.
+
+        EXEMPLO DE FORMATO:
+        {
+          "sugestoes": [
+            {
+              "acao": "Uma ação prática e específica.",
+              "motivo": "Uma justificativa acolhedora que explique por que a ação pode ser útil, conectando-a cuidadosamente às experiências registradas."
+            },
+            {
+              "acao": "Outra ação prática e específica.",
+              "motivo": "Uma justificativa personalizada que explique o possível benefício da ação sem presumir informações ou estabelecer relações causais."
+            },
+            {
+              "acao": "Uma terceira ação prática e específica.",
+              "motivo": "Uma justificativa reflexiva, natural e baseada nos registros, que ajude o usuário a compreender a relevância da ação."
+            }
+          ]
+        }
+        """;
+
+        String relatosDiaString = objectMapper.writeValueAsString(relatos7dias);
+
+        String higieneSonoString = objectMapper.writeValueAsString(higieneSono7dias);
+
+        String atividadeString = objectMapper.writeValueAsString(atividade7dias);
+
+        String avaliacaoString = objectMapper.writeValueAsString(avaliacao7dias);
+
+        String input = """
+                %s
+                
+                RELATOS DO DIA DOS ÚLTIMOS 7 DIAS
+                %s
+                
+                HIGIENE DO SONO DOS ÚLTIMOS 7 DIAS
+                %s
+                
+                ATIVIDADES OBRIGATÓRIAS DOS ÚLTIMOS 7 DIAS
+                %s
+                
+                AVALIAÇÕES DE SENTIMENTOS DOS ÚLTIMOS 7 DIAS
+                %s
+              
+                """.formatted(
+                        textoContexto,
+                        relatosDiaString,
+                        higieneSonoString,
+                        atividadeString,
+                        avaliacaoString
+        );
+
+        return objectMapper.writeValueAsString(input);
+
+    }
+
+    public GeminiResponseDTO retornarSugestoesSaudeMental(String prompt) throws IOException, InterruptedException {
+
+
+        String json = """
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": %s
+                    }
+                  ]
+                }
+              ],
+              "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "sugestoes": {
+                      "type": "ARRAY",
+                      "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                          "acao": {
+                            "type": "STRING"
+                          },
+                          "motivo": {
+                            "type": "STRING"
+                          }
+                        },
+                        "required": [
+                          "acao",
+                          "motivo"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "sugestoes"
+                  ]
+                }
+              }
+            }
+            """.formatted(prompt);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(
+                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key="
+                                + apiKey
+                ))
+                .header(
+                        "x-goog-api-key",apiKey
+                )
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response;
+
+        try{
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (HttpTimeoutException e) {
+            throw new IOException("O Gemini demorou demais para responder.", e);
+
+        } catch (IOException e) {
+            throw new IOException("Não foi possível conectar à API do Gemini.", e);
+        }
+
+        if(response.statusCode()<200 || response.statusCode() >= 300){
+            throw new IOException("HTTP " + response.statusCode() + ". Detalhes: " + response.body());
+        }
+
+       return objectMapper.readValue(response.body(), GeminiResponseDTO.class);
     }
 
     public IAResponseDTO chat(String mensagem, UUID idChat, List<Mensagem> listaDeMensagens) {

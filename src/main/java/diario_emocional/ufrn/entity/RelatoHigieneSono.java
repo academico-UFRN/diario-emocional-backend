@@ -1,5 +1,6 @@
 package diario_emocional.ufrn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import diario_emocional.ufrn.enums.NivelDisposicao;
 import diario_emocional.ufrn.enums.QualidadeSono;
 import jakarta.persistence.*;
@@ -50,6 +51,7 @@ public class RelatoHigieneSono {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     public RelatoHigieneSono() {

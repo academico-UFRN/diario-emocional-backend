@@ -74,11 +74,16 @@ public class LembreteService {
         lembreteRepository.deleteByAtividadeObrigatoriaId(atividadeId);
     }
 
-    public boolean horarioDoLembreteChegou(Lembrete lembrete) {
-
+    public boolean diaEHorarioDoLembreteChegou(Lembrete lembrete) {
+        LocalDate hoje = LocalDate.now();
         LocalTime agora = LocalTime.now().withSecond(0).withNano(0);
 
-        return agora.equals(lembrete.getHora());
+        DiaSemana diaHoje = converterDiaSemana(hoje.getDayOfWeek());
+
+        boolean diaConfigurado = lembrete.getDiaSemana().equals(diaHoje);
+        boolean horarioChegou = agora.equals(lembrete.getHora());
+
+        return diaConfigurado && horarioChegou;
     }
     public LembreteResponseDto verificarLembreteParaEnviar() {
 
@@ -92,7 +97,7 @@ public class LembreteService {
                     lembrete.getUltimaDataEnvio() == null
                             || !lembrete.getUltimaDataEnvio().equals(hoje);
 
-            if (aindaNaoEnviado && horarioDoLembreteChegou(lembrete)) {
+            if (aindaNaoEnviado && diaEHorarioDoLembreteChegou(lembrete)) {
 
                 lembrete.setUltimaDataEnvio(hoje);
                 lembreteRepository.save(lembrete);

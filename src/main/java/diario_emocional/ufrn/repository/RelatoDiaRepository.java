@@ -16,6 +16,8 @@ public interface RelatoDiaRepository extends JpaRepository<RelatoDia, LocalDate>
             LocalDate dataRegistro
     );
 
+    boolean existsByUsuarioId(Long usuarioId);
+
     RelatoDia findRelatoDiasByUsuarioIdAndDataRegistro(Long usuarioId, LocalDate dataRegistro);
 
     List<RelatoDia> findAllByUsuarioId(Long usuarioId);

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,9 +19,18 @@ public interface AtividadeObrigatoriaRepository extends JpaRepository<AtividadeO
 
     Optional<AtividadeObrigatoria> findByIdAndUsuarioIdAndAtivoTrue(Long id, Long usuarioId);
 
-    @Query("SELECT a FROM AtividadeObrigatoria a JOIN a.diasDaSemana d WHERE a.usuarioId = :usuarioId AND a.ativo = true AND d = :dia")
+    @Query("""
+    SELECT a
+    FROM AtividadeObrigatoria a
+    JOIN a.diasDaSemana d
+    WHERE a.usuario.id = :usuarioId
+    AND a.ativo = true
+    AND d = :dia
+""")
     List<AtividadeObrigatoria> findByUsuarioIdAndDiaSemana(
-        @Param("usuarioId") Long usuarioId,
-        @Param("dia") DiaSemana dia
+            @Param("usuarioId") Long usuarioId,
+            @Param("dia") DiaSemana dia
     );
+
+    List<AtividadeObrigatoria> findAllByUsuario_IdAndAtivoTrue(Long id);
 }

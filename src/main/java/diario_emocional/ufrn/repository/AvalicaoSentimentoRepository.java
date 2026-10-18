@@ -14,4 +14,6 @@ public interface AvalicaoSentimentoRepository extends JpaRepository<AvaliacaoSen
     List<AvaliacaoSentimento> findByUsuario(Usuario usuario);
 
     Optional<AvaliacaoSentimento> findByUsuarioAndDataRegistro(Usuario usuario, LocalDate dataRegistro);
+
+    List<AvaliacaoSentimento> findAllByUsuario_IdAndDataRegistroBetween( Long usuarioId, LocalDate dataInicial, LocalDate dataFinal);
 }

@@ -178,12 +178,6 @@ public class IAService {
             throw new IllegalArgumentException("Gemini não retornou candidates.");
         }
 
-        String resposta = response.getCandidates().get(0)
-                .getContent()
-                .getParts()
-                .get(0)
-                .getText();
-
         return response
                 .getCandidates()
                 .get(0)

@@ -62,7 +62,12 @@ public class RelatoDiaService {
         // verifica se o usuário existe
         Usuario usuario = validaUsuarioExistente(usuarioId);
 
-        return this.relatoDiaRepository.findAllByUsuarioId(usuarioId);
+        // verifica se usuario + relato já existem
+        if (!this.relatoDiaRepository.existsByUsuarioId(usuarioId)) {
+            throw new ResourceNotFoundException("Não foi possível encontrar o relato para esse usuário nessa data.");
+        } else {
+            return this.relatoDiaRepository.findAllByUsuarioId(usuarioId);
+        }
 
     }
 

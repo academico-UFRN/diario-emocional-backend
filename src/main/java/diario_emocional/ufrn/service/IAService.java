@@ -423,7 +423,7 @@ public class IAService {
        return objectMapper.readValue(response.body(), GeminiResponseDTO.class);
     }
 
-    public IAResponseDTO chat(String mensagem, UUID idChat, List<Mensagem> listaDeMensagens) {
+    public IAResponseDTO gerarRespostaNoChatSocratico(String mensagem, List<Mensagem> listaDeMensagens) {
         System.out.println(objectMapper.writeValueAsString(listaDeMensagens));
 
         String system = """
@@ -464,7 +464,7 @@ public class IAService {
         return objectMapper.readValue(jsonOutput, IAResponseDTO.class);
     }
 
-    public IAResponseCriarDTO PrimeiraResposta(String mensagem) {
+    public IAResponseCriarDTO gerarPrimeiraRespostaNoChatSocratico(String mensagem) {
 
         String system = """
             Você é um psicólogo clínico especializado no atendimento a adolescentes e jovens adultos. Sua abordagem é fundamentada na Terapia Cognitivo-Comportamental (TCC) e você utiliza estritamente o método de **Questionamento Socrático** para conduzir a conversa.
@@ -492,7 +492,7 @@ public class IAService {
 
         String jsonOutput = this.chatClient.prompt()
                 .options(GoogleGenAiChatOptions.builder().responseMimeType("application/json"))
-                .system( "Essa é a primeiro resposta - Responda em JSON: {\"mensagem\": \"sua resposta aqui\", \"titulo\": \"titulo da conversa\"}")
+                .system( system + "Essa é a primeiro resposta - Responda em JSON: {\"mensagem\": \"sua resposta aqui\", \"titulo\": \"titulo da conversa\"}")
                 .user(mensagem)
                 .call()
                 .content();

@@ -42,7 +42,7 @@ public class ChatService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o ID: " + usuarioId));
 
-        IAResponseCriarDTO resposta = iaService.PrimeiraResposta(mensagem);
+        IAResponseCriarDTO resposta = iaService.gerarPrimeiraRespostaNoChatSocratico(mensagem);
 
         Chat chat = new Chat(resposta.titulo(), usuario);
 
@@ -65,7 +65,7 @@ public class ChatService {
 
         List<Mensagem> listaDeMensagens = mensagemRepository.findTop10ByChatIdOrderByCriadoEmDesc(chatId);
 
-        IAResponseDTO resposta = iaService.chat(mensagem, chatId, listaDeMensagens);
+        IAResponseDTO resposta = iaService.gerarRespostaNoChatSocratico(mensagem, listaDeMensagens);
 
         Mensagem mensagem_user = new Mensagem(MensagemRole.USER, mensagem, chat);
         Mensagem mensagem_ia = new Mensagem(MensagemRole.IA, resposta.mensagem(), chat);

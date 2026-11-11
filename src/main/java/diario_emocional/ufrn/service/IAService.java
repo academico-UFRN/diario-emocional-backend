@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -421,6 +422,73 @@ public class IAService {
         }
 
        return objectMapper.readValue(response.body(), GeminiResponseDTO.class);
+    }
+
+    public String analisarPadroesEmocionais(String prompt) throws IOException, InterruptedException {
+        Map<String, Object> evidenciasSchema = Map.of(
+                "type", "ARRAY",
+                "items", Map.of("type", "STRING")
+        );
+        Map<String, Object> observacaoSchema = Map.of(
+                "type", "OBJECT",
+                "properties", Map.of(
+                        "criterio", Map.of("type", "STRING"),
+                        "descricao", Map.of("type", "STRING"),
+                        "evidencias", evidenciasSchema
+                ),
+                "required", List.of("criterio", "descricao", "evidencias")
+        );
+        Map<String, Object> responseSchema = Map.of(
+                "type", "OBJECT",
+                "properties", Map.of(
+                        "observacoes", Map.of(
+                                "type", "ARRAY",
+                                "items", observacaoSchema
+                        ),
+                        "limitacoes", Map.of(
+                                "type", "ARRAY",
+                                "items", Map.of("type", "STRING")
+                        )
+                ),
+                "required", List.of("observacoes", "limitacoes")
+        );
+        Map<String, Object> requestBody = Map.of(
+                "contents", List.of(Map.of(
+                        "parts", List.of(Map.of("text", prompt))
+                )),
+                "generationConfig", Map.of(
+                        "responseMimeType", "application/json",
+                        "responseSchema", responseSchema
+                )
+        );
+
+        String requestJson = objectMapper.writeValueAsString(requestBody);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(
+                        "https://generativelanguage.googleapis.com/v1beta/models/"
+                                + "gemini-3.5-flash-lite:generateContent?key=" + apiKey))
+                .header("x-goog-api-key", apiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestJson))
+                .build();
+
+        HttpResponse<String> response;
+        try {
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (HttpTimeoutException e) {
+            throw new IOException("O Gemini demorou demais para analisar os registros.", e);
+        } catch (IOException e) {
+            throw new IOException("Não foi possível conectar à API do Gemini.", e);
+        }
+
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("HTTP " + response.statusCode()
+                    + ". Detalhes: " + response.body());
+        }
+
+        GeminiResponseDTO resposta = objectMapper.readValue(
+                response.body(), GeminiResponseDTO.class);
+        return retornarStringSugestao(resposta);
     }
 
     public IAResponseDTO gerarRespostaNoChatSocratico(String mensagem, List<Mensagem> listaDeMensagens) {

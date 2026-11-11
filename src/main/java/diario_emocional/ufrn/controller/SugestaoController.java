@@ -1,8 +1,6 @@
 package diario_emocional.ufrn.controller;
 
-import diario_emocional.ufrn.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.entity.Solicitacao;
-import diario_emocional.ufrn.service.IAService;
 import diario_emocional.ufrn.service.SugestaoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +13,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/sugestao-saude-mental")
 public class SugestaoController {
-    private final IAService iaService;
     private final SugestaoService sugestaoService;
 
-    public SugestaoController(IAService iaService, SugestaoService sugestaoService){
+    public SugestaoController(SugestaoService sugestaoService){
         this.sugestaoService = sugestaoService;
-        this.iaService = iaService;
     }
 
     @PostMapping("/{usuarioId}")

@@ -1,7 +1,7 @@
 package diario_emocional.ufrn.framework.dto;
 
 import diario_emocional.ufrn.framework.entity.AtividadeObrigatoria;
-import diario_emocional.ufrn.framework.entity.AvaliacaoSentimento;
+import diario_emocional.ufrn.framework.entity.Avaliacao;
 import diario_emocional.ufrn.framework.entity.RelatoDia;
 import diario_emocional.ufrn.framework.entity.RelatoHigieneSono;
 
@@ -12,6 +12,6 @@ public class ContextoSemanalDTO {
     private List<RelatoDia> relatos;
     private List<RelatoHigieneSono> higieneSono;
     private List<AtividadeObrigatoria> atividades;
-    private List<AvaliacaoSentimento> sentimentos;
+    private List<Avaliacao> sentimentos;
 
 }

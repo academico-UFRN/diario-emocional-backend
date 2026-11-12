@@ -16,6 +16,6 @@ import java.util.UUID;
 public interface ChatRepository extends JpaRepository<Chat, UUID> {
     Optional<Chat> findByIdAndUsuario(UUID uuid, Usuario usuario);
 
-    @Query("SELECT new diario_emocional.ufrn.dto.IA.ChatResumoDTO(c.id, c.titulo) FROM Chat c WHERE c.usuario = :usuario")
+    @Query("SELECT new diario_emocional.ufrn.framework.dto.IA.ChatResumoDTO(c.id, c.titulo) FROM Chat c WHERE c.usuario = :usuario")
     List<ChatResumoDTO> findResumoByUsuario(@Param("usuario") Usuario usuario);
 }

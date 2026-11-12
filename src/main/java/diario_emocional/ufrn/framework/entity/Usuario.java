@@ -31,7 +31,7 @@ public class Usuario {
     private List<AtividadeObrigatoria> atividadesObrigatorias = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AvaliacaoSentimento> avaliacoesSentimento = new ArrayList<>();
+    private List<Avaliacao> avaliacoesSentimento = new ArrayList<>();
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Solicitacao> solicitacaos = new ArrayList<>();
@@ -53,5 +53,5 @@ public class Usuario {
     public List<RelatoDia> getRelatoDias() { return relatoDias; }
     public List<RelatoHigieneSono> getRelatosHigieneSono() { return relatosHigieneSono; }
     public List<AtividadeObrigatoria> getAtividadesObrigatorias() { return atividadesObrigatorias; }
-    public List<AvaliacaoSentimento> getAvaliacoesSentimento() { return avaliacoesSentimento; }
+    public List<Avaliacao> getAvaliacoesSentimento() { return avaliacoesSentimento; }
 }

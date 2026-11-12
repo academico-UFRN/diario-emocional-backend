@@ -6,7 +6,6 @@ import diario_emocional.ufrn.framework.dto.SugestaoDTO;
 import diario_emocional.ufrn.framework.entity.*;
 import diario_emocional.ufrn.framework.exception.ResourceNotFoundException;
 import diario_emocional.ufrn.framework.repository.*;
-import diario_emocional.ufrn.repository.*;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,16 +23,16 @@ public class SugestaoService {
     private final RelatoDiaRepository relatoDiaRepository;
     private final RelatoHigieneSonoRepository relatoHigieneSonoRepository;
     private final AtividadeObrigatoriaRepository atividadeObrigatoriaRepository;
-    private final AvalicaoSentimentoRepository avalicaoSentimentoRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final UsuarioRepository usuarioRepository;
 
-    SugestaoService(IAService iaService, SolicitacaoRepository solicitacaoRepository, RelatoDiaRepository relatoDiaRepository,RelatoHigieneSonoRepository relatoHigieneSonoRepository,AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvalicaoSentimentoRepository avalicaoSentimentoRepository, UsuarioRepository usuarioRepository){
+    SugestaoService(IAService iaService, SolicitacaoRepository solicitacaoRepository, RelatoDiaRepository relatoDiaRepository,RelatoHigieneSonoRepository relatoHigieneSonoRepository,AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvaliacaoRepository avaliacaoRepository, UsuarioRepository usuarioRepository){
         this.iaService = iaService;
         this.solicitacaoRepository = solicitacaoRepository;
         this.relatoDiaRepository = relatoDiaRepository;
         this.relatoHigieneSonoRepository = relatoHigieneSonoRepository;
         this.atividadeObrigatoriaRepository = atividadeObrigatoriaRepository;
-        this.avalicaoSentimentoRepository = avalicaoSentimentoRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -60,7 +59,7 @@ public class SugestaoService {
             erros.add("Não existe nenhuma atividade obrigatória cadastrada nos últimos 7 dias.");
         }
 
-        List<AvaliacaoSentimento> avaliacao7dias = this.avalicaoSentimentoRepository.findAllByUsuario_IdAndDataRegistroBetween(usuarioId, data.minusDays(7), data);
+        List<Avaliacao> avaliacao7dias = this.avaliacaoRepository.findAllByUsuario_IdAndDataRegistroBetween(usuarioId, data.minusDays(7), data);
 
         if(avaliacao7dias.isEmpty()){
             erros.add("Não existe nenhuma avaliação de sentimentos nos últimos 7 dias");

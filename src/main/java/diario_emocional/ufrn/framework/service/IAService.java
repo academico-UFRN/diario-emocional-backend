@@ -5,7 +5,7 @@ import diario_emocional.ufrn.framework.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.framework.dto.IA.IAResponseDTO;
 import diario_emocional.ufrn.framework.entity.*;
 import diario_emocional.ufrn.framework.repository.AtividadeObrigatoriaRepository;
-import diario_emocional.ufrn.framework.repository.AvalicaoSentimentoRepository;
+import diario_emocional.ufrn.framework.repository.AvaliacaoRepository;
 import diario_emocional.ufrn.framework.repository.RelatoDiaRepository;
 import diario_emocional.ufrn.framework.repository.RelatoHigieneSonoRepository;
 import org.springframework.ai.chat.client.ChatClient;
@@ -32,20 +32,20 @@ public class IAService {
     private final RelatoDiaRepository relatoDiaRepository;
     private final RelatoHigieneSonoRepository relatoHigieneSonoRepository;
     private final AtividadeObrigatoriaRepository atividadeObrigatoriaRepository;
-    private final AvalicaoSentimentoRepository avalicaoSentimentoRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final ObjectMapper objectMapper;
 
     @Value("${gemini.api-key}")
     private String apiKey;
     private final ChatClient chatClient;
 
-    public IAService(RelatoDiaRepository relatoDiaRepository,  RelatoHigieneSonoRepository relatoHigieneSonoRepository, AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvalicaoSentimentoRepository avalicaoSentimentoRepository, ObjectMapper objectMapper, ChatModel chatModel, ChatClient.Builder chatClientBuilder){
+    public IAService(RelatoDiaRepository relatoDiaRepository,  RelatoHigieneSonoRepository relatoHigieneSonoRepository, AtividadeObrigatoriaRepository atividadeObrigatoriaRepository, AvaliacaoRepository avaliacaoRepository, ObjectMapper objectMapper, ChatModel chatModel, ChatClient.Builder chatClientBuilder){
         this.chatClient = chatClientBuilder.build();
         this.httpClient = HttpClient.newHttpClient();
         this.relatoDiaRepository = relatoDiaRepository;
         this.relatoHigieneSonoRepository = relatoHigieneSonoRepository;
         this.atividadeObrigatoriaRepository = atividadeObrigatoriaRepository;
-        this.avalicaoSentimentoRepository = avalicaoSentimentoRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -182,7 +182,7 @@ public class IAService {
     }
 
 
-    public String gerarPromptSugestaoSaudeMental(List<RelatoDia> relatos7dias, List<RelatoHigieneSono> higieneSono7dias, List<AtividadeObrigatoria> atividade7dias, List<AvaliacaoSentimento> avaliacao7dias){
+    public String gerarPromptSugestaoSaudeMental(List<RelatoDia> relatos7dias, List<RelatoHigieneSono> higieneSono7dias, List<AtividadeObrigatoria> atividade7dias, List<? extends Avaliacao> avaliacao7dias){
 
         String textoContexto = """
         Você é um assistente de reflexão pessoal e bem-estar
@@ -416,7 +416,7 @@ public class IAService {
        return objectMapper.readValue(response.body(), GeminiResponseDTO.class);
     }
 
-    public IAResponseDTO gerarRespostaNoChatSocratico(String mensagem, List<Mensagem> listaDeMensagens) {
+    public IAResponseDTO gerarRespostaNoChatSocratico(String mensagem, List<Mensagem> listaDeMensagens, List<? extends Avaliacao> ultimasAvaliacoes) {
         System.out.println(objectMapper.writeValueAsString(listaDeMensagens));
 
         String system = """
@@ -442,10 +442,17 @@ public class IAService {
             - Valide o sentimento do jovem antes de questionar a lógica do pensamento.
             - Se o jovem pedir para você resolver o problema dele, devolva com uma pergunta reflexiva sobre o que ele espera alcançar.
             - Inicie a sessão apresentando-se de forma amigável e perguntando sobre o que ele gostaria de conversar hoje.
+            - Considere os últimos 3 registros de avaliação emocional do usuário (quando disponíveis) como contexto adicional sobre como ele tem se sentido recentemente para enriquecer as perguntas socráticas de forma sutil e natural, sem expor os dados de maneira robótica.
             
             **Mensagens ateriores**
             %s
-        \s""".formatted(objectMapper.writeValueAsString(listaDeMensagens));
+
+            **Últimos 3 registros de Avaliação**
+            %s
+        \s""".formatted(
+                objectMapper.writeValueAsString(listaDeMensagens),
+                objectMapper.writeValueAsString(ultimasAvaliacoes)
+        );
 
         String jsonOutput = this.chatClient.prompt()
                 .options(GoogleGenAiChatOptions.builder().responseMimeType("application/json"))
@@ -457,7 +464,7 @@ public class IAService {
         return objectMapper.readValue(jsonOutput, IAResponseDTO.class);
     }
 
-    public IAResponseCriarDTO gerarPrimeiraRespostaNoChatSocratico(String mensagem) {
+    public IAResponseCriarDTO gerarPrimeiraRespostaNoChatSocratico(String mensagem, List<? extends Avaliacao> ultimasAvaliacoes) {
 
         String system = """
             Você é um psicólogo clínico especializado no atendimento a adolescentes e jovens adultos. Sua abordagem é fundamentada na Terapia Cognitivo-Comportamental (TCC) e você utiliza estritamente o método de **Questionamento Socrático** para conduzir a conversa.
@@ -481,7 +488,11 @@ public class IAService {
             - Valide o sentimento do jovem antes de questionar a lógica do pensamento.
             - Se o jovem pedir para você resolver o problema dele, devolva com uma pergunta reflexiva sobre o que ele espera alcançar.
             - Inicie a sessão apresentando-se de forma amigável e perguntando sobre o que ele gostaria de conversar hoje.
-        \s""";
+            - Considere os últimos 3 registros de avaliação emocional do usuário (quando disponíveis) como contexto adicional sobre como ele tem se sentido recentemente para enriquecer as perguntas socráticas de forma sutil e natural, sem expor os dados de maneira robótica.
+
+            **Últimos 3 registros de Avaliação**
+            %s
+        \s""".formatted(objectMapper.writeValueAsString(ultimasAvaliacoes));
 
         String jsonOutput = this.chatClient.prompt()
                 .options(GoogleGenAiChatOptions.builder().responseMimeType("application/json"))

@@ -6,19 +6,22 @@ public class ChatSocraticPromptTemplate extends SocraticPromptTemplate {
     private final String contextoAdicional;
     private final String criterio;
     private final boolean solicitarTitulo;
+    private final String orientacoesDeDominio;
 
     public ChatSocraticPromptTemplate(
             String tema,
             String historico,
             String contextoAdicional,
             String criterio,
-            boolean solicitarTitulo
+            boolean solicitarTitulo,
+            String orientacoesDeDominio
     ) {
         super(historico);
         this.tema = tema;
         this.contextoAdicional = contextoAdicional;
         this.criterio = criterio;
         this.solicitarTitulo = solicitarTitulo;
+        this.orientacoesDeDominio = orientacoesDeDominio;
     }
 
     @Override
@@ -26,11 +29,14 @@ public class ChatSocraticPromptTemplate extends SocraticPromptTemplate {
         String contexto = contextoAdicional == null || contextoAdicional.isBlank()
                 ? ""
                 : "\n\nCONTEXTO ADICIONAL:\n" + contextoAdicional;
+        String orientacoes = orientacoesDeDominio == null || orientacoesDeDominio.isBlank()
+                ? ""
+                : "\n\nORIENTAÇÕES ESPECÍFICAS DO DOMÍNIO:\n" + orientacoesDeDominio.strip();
         return """
                 Ajude a pessoa a refletir sobre o tema ou problema abaixo, sem pressupor
                 uma área profissional específica e sem decidir por ela:
-                %s%s
-                """.formatted(tema, contexto);
+                %s%s%s
+                """.formatted(tema, contexto, orientacoes);
     }
 
     @Override

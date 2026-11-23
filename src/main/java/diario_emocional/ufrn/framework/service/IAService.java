@@ -5,6 +5,7 @@ import diario_emocional.ufrn.framework.dto.IA.GeminiResponseDTO;
 import diario_emocional.ufrn.framework.dto.IA.IAResponseDTO;
 import diario_emocional.ufrn.framework.entity.*;
 import diario_emocional.ufrn.framework.prompts.ChatSocraticPromptTemplate;
+import diario_emocional.ufrn.framework.prompts.SocraticPromptSpecialization;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
@@ -28,15 +29,22 @@ public class IAService {
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final SocraticPromptSpecialization socraticPromptSpecialization;
 
     @Value("${gemini.api-key}")
     private String apiKey;
     private final ChatClient chatClient;
 
-    public IAService(ObjectMapper objectMapper, ChatModel chatModel, ChatClient.Builder chatClientBuilder){
+    public IAService(
+            ObjectMapper objectMapper,
+            ChatModel chatModel,
+            ChatClient.Builder chatClientBuilder,
+            SocraticPromptSpecialization socraticPromptSpecialization
+    ) {
         this.chatClient = chatClientBuilder.build();
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = objectMapper;
+        this.socraticPromptSpecialization = socraticPromptSpecialization;
     }
 
     public String gerarPromptSugestoesRelatoDia(List<RelatoDia> relatos7dias){
@@ -320,7 +328,8 @@ public class IAService {
                 contextoAdicional,
                 "Marque como concluída somente quando a pessoa indicar que alcançou o resultado "
                         + "que buscava ou que não deseja continuar.",
-                solicitarTitulo
+                solicitarTitulo,
+                socraticPromptSpecialization.orientacoesDeDominio()
         );
     }
 
